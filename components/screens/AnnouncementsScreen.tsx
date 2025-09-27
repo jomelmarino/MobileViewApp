@@ -1,5 +1,17 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../src/utils/supabase';
+
+interface Announcement {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  category: string;
+  image_path?: string;
+  imageUrl?: string;
+  created_at?: string;
+}
 
 interface AnnouncementsScreenProps {
   onNavigateToDetail: (type: 'announcement', id: string) => void;
@@ -8,58 +20,50 @@ interface AnnouncementsScreenProps {
 
 export const AnnouncementsScreen = ({ onNavigateToDetail, onBack }: AnnouncementsScreenProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // TODO: Fetch announcements from Supabase
-  // Example: const { data: announcements, error } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
-  // if (error) { console.error('Error fetching announcements:', error); }
-  // else { setAnnouncements(data); }
+  const getImageUrl = (imagePath: string) => {
+    const { data } = supabase.storage
+      .from('announcements')
+      .getPublicUrl(imagePath);
+    return data.publicUrl;
+  };
 
-  // TODO: Replace mock data with Supabase data
-  // Use: const { data: announcements, error } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
-  const announcements = [
-    {
-      id: '1',
-      title: 'System Maintenance',
-      description: 'Scheduled maintenance will occur this weekend. Services may be temporarily unavailable.',
-      date: '2023-06-15',
-      category: 'Technical',
-      image: 'https://example.com/announcement1.jpg',
-    },
-    {
-      id: '2',
-      title: 'New Features Available',
-      description: 'We\'ve added new features to improve your experience. Check them out in the settings.',
-      date: '2023-06-10',
-      category: 'Product',
-      image: 'https://example.com/announcement2.jpg',
-    },
-    {
-      id: '3',
-      title: 'Office Relocation',
-      description: 'Our office will be relocating to a new building next month. Stay tuned for more details.',
-      date: '2023-06-05',
-      category: 'Company',
-      image: 'https://example.com/announcement3.jpg',
-    },
-    {
-      id: '4',
-      title: 'Holiday Schedule',
-      description: 'Please note the adjusted schedule for the upcoming holiday period.',
-      date: '2023-05-28',
-      category: 'HR',
-      image: 'https://example.com/announcement4.jpg',
-    },
-  ];
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const AnnouncementCard = ({ announcement }: { announcement: typeof announcements[0] }) => (
+      if (error) {
+        console.error('Error fetching announcements:', error);
+      } else {
+        // Add image URLs
+        const announcementsWithImages = data.map(announcement => ({
+          ...announcement,
+          imageUrl: announcement.image_path ? getImageUrl(announcement.image_path) : null
+        }));
+        setAnnouncements(announcementsWithImages);
+      }
+      setLoading(false);
+    };
 
+    fetchAnnouncements();
+  }, []);
 
+  const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
     <TouchableOpacity
       className="bg-white rounded-lg mb-6 shadow-md overflow-hidden"
       onPress={() => onNavigateToDetail('announcement', announcement.id)}
     >
       <View className="h-40 bg-gray-200 justify-center items-center">
-        <Text className="text-black-600">Image Placeholder</Text>
+        {announcement.imageUrl ? (
+          <Image source={{ uri: announcement.imageUrl }} className="w-full h-full" resizeMode="cover" />
+        ) : (
+          <Text className="text-gray-600">No Image</Text>
+        )}
       </View>
       <View className="p-6">
         <View className="flex-row justify-between items-center mb-2">

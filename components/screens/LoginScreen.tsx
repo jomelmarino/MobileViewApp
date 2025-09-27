@@ -117,6 +117,7 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToSignup }: LoginScreenP
               disabled={!email || !password || loading}
               borderRadius={60}
               variant="secondary"
+              backgroundColor="#005073"
             />
           </View>
         </View>

@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../common/Button';
 import { supabase } from '../../src/utils/supabase';
 
@@ -9,10 +9,20 @@ interface SignupScreenProps {
 }
 
 export const SignupScreen = ({ onSignupSuccess, onNavigateToLogin }: SignupScreenProps) => {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        onNavigateToLogin();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -30,17 +40,24 @@ export const SignupScreen = ({ onSignupSuccess, onNavigateToLogin }: SignupScree
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
       });
 
       if (error) {
         Alert.alert('Signup Failed', error.message);
         console.error('Signup error:', error);
       } else {
-        Alert.alert(
-          'Signup Successful',
-          'Please check your email to confirm your account before signing in.',
-          [{ text: 'OK', onPress: onSignupSuccess }]
-        );
+        if (data.session) {
+          onNavigateToLogin();
+        } else {
+          Alert.alert('Please check your email', '', [
+            { text: 'OK', onPress: onNavigateToLogin }
+          ]);
+        }
       }
     } catch (err) {
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
@@ -66,6 +83,20 @@ export const SignupScreen = ({ onSignupSuccess, onNavigateToLogin }: SignupScree
           <Text className="text-2xl font-bold text-gray-900 text-center mb-8">
             Create Account
           </Text>
+          {/* Full Name Input */}
+          <View className="mb-8">
+            <Text className="text-base font-semibold text-gray-900 mb-2">
+              Full Name
+            </Text>
+            <TextInput
+              className="border border-gray-300 rounded-lg p-4 bg-white text-base text-gray-900"
+              placeholder="Enter your full name"
+              placeholderTextColor="#6c757d"
+              value={fullName}
+              onChangeText={setFullName}
+              autoComplete="name"
+            />
+          </View>
           {/* Email Input */}
           <View className="mb-8">
             <Text className="text-base font-semibold text-gray-900 mb-2">
@@ -120,7 +151,7 @@ export const SignupScreen = ({ onSignupSuccess, onNavigateToLogin }: SignupScree
             <Button
               title={loading ? "Signing Up..." : "Sign Up"}
               onPress={handleSignup}
-              disabled={!email || !password || !confirmPassword || password !== confirmPassword || loading}
+              disabled={!fullName || !email || !password || !confirmPassword || password !== confirmPassword || loading}
             />
           </View>
 

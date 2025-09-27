@@ -1,40 +1,75 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
 import { Button } from '../common/Button';
+import { supabase } from '../../src/utils/supabase';
 
-interface DetailScreenProps {
-  type: 'announcement' | 'event';
-  onBack: () => void;
-  onAddToCalendar?: () => void;
-  onShare?: () => void;
+interface Item {
+  id: string;
+  title: string;
+  description: string;
+  date?: string;
+  time?: string;
+  location?: string;
+  category: string;
+  image_path?: string;
+  imageUrl?: string;
+  created_at?: string;
 }
 
-export const DetailScreen = ({ type, onBack, onAddToCalendar, onShare }: DetailScreenProps) => {
-  // TODO: Fetch item details from Supabase based on type and id
-  // Example: const { data: item, error } = await supabase.from(type === 'announcement' ? 'announcements' : 'events').select('*').eq('id', id).single();
-  // if (error) { console.error('Error fetching item:', error); }
-  // else { setItem(data); }
+interface DetailScreenProps {
+  type: 'announcement';
+  id: string;
+  onBack: () => void;
+}
 
-  // TODO: Replace mock data with Supabase data
-  // Use: const { data: item, error } = await supabase.from(type === 'announcement' ? 'announcements' : 'events').select('*').eq('id', id).single();
-  const item = {
-    id: '1',
-    title: type === 'announcement'
-      ? 'System Maintenance Notice'
-      : 'Company Annual Meeting',
-    date: '2023-06-20',
-    time: type === 'event' ? '10:00 AM - 12:00 PM' : undefined,
-    location: type === 'event' ? 'Main Conference Hall, 3rd Floor' : undefined,
-    category: type === 'announcement' ? 'Technical' : 'Corporate',
-    description: type === 'announcement'
-      ? 'We would like to inform all employees that our system will be undergoing scheduled maintenance this weekend. During this time, access to certain services may be temporarily unavailable.\n\nThe maintenance window is scheduled from Saturday, June 24th at 10:00 PM to Sunday, June 25th at 2:00 AM. We apologize for any inconvenience this may cause and appreciate your understanding as we work to improve our systems.\n\nIf you have any urgent matters that need attention during this period, please contact the IT support team at support@company.com.'
-      : 'Join us for our annual company meeting where we\'ll discuss our achievements over the past year and our goals for the future. This is a great opportunity to connect with colleagues from all departments and learn about exciting developments in our company.\n\nAgenda:\n- Welcome and introductions\n- CEO keynote address\n- Department highlights\n- Q&A session\n- Networking reception',
-    imageUrl: 'https://example.com/image.jpg',
+export const DetailScreen = ({ type, id, onBack }: DetailScreenProps) => {
+  const [item, setItem] = useState<Item | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const getImageUrl = (imagePath: string) => {
+    const { data } = supabase.storage
+      .from('announcements')
+      .getPublicUrl(imagePath);
+    return data.publicUrl;
   };
 
+  useEffect(() => {
+    const fetchItem = async () => {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching item:', error);
+      } else {
+        const itemWithImage = {
+          ...data,
+          imageUrl: data.image_path ? getImageUrl(data.image_path) : null
+        };
+        setItem(itemWithImage);
+      }
+      setLoading(false);
+    };
+
+    if (id) {
+      fetchItem();
+    }
+  }, [type, id]);
+
+  if (loading || !item) {
+    return (
+      <View className="flex-1 bg-primary-10 justify-center items-center">
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View className="flex-1 bg-blue-50">
+    <View className="flex-1 bg-primary-10">
       {/* Header */}
-      <View className="bg-blue-500 pt-10 pb-6 px-6 rounded-bl-[30px] rounded-br-[30px]">
+      <View className="bg-primary-30 pt-10 pb-6 px-6 rounded-bl-[30px] rounded-br-[30px]">
         <View className="flex-row items-center mb-6">
           <TouchableOpacity onPress={onBack} className="mr-6">
             <Text className="text-white text-lg font-bold">
@@ -42,7 +77,7 @@ export const DetailScreen = ({ type, onBack, onAddToCalendar, onShare }: DetailS
             </Text>
           </TouchableOpacity>
           <Text className="text-xl font-bold text-white">
-            {type === 'announcement' ? 'Announcement' : 'Event'} Details
+            Announcement Details
           </Text>
         </View>
 
@@ -55,14 +90,16 @@ export const DetailScreen = ({ type, onBack, onAddToCalendar, onShare }: DetailS
       </View>
 
       <ScrollView
-        className="flex-1"
+        className="flex-1 "
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Image */}
         <View className="h-[200px] bg-gray-300 justify-center items-center m-6 rounded-lg">
-          <Text className="text-gray-500 text-lg">
-            📷 Image Placeholder
-          </Text>
+          {item.imageUrl ? (
+            <Image source={{ uri: item.imageUrl }} className="w-full h-full rounded-lg" resizeMode="cover" />
+          ) : (
+            <Text className="text-gray-500 text-lg">No Image</Text>
+          )}
         </View>
 
         {/* Content Card */}
@@ -106,27 +143,6 @@ export const DetailScreen = ({ type, onBack, onAddToCalendar, onShare }: DetailS
           </Text>
         </View>
 
-        {/* Action Buttons for Events */}
-        {type === 'event' && (
-          <View className="px-6 mb-6">
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Button
-                  title="Add to Calendar"
-                  onPress={onAddToCalendar || (() => {})}
-                  variant="outline"
-                />
-              </View>
-              <View className="flex-1">
-                <Button
-                  title="Share Event"
-                  onPress={onShare || (() => {})}
-                  variant="primary"
-                />
-              </View>
-            </View>
-          </View>
-        )}
       </ScrollView>
     </View>
   );

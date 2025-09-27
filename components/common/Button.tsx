@@ -7,18 +7,22 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline';
   disabled?: boolean;
   borderRadius?: number;
+  backgroundColor?: string;
 }
 
-export const Button = ({ title, onPress, variant = 'primary', disabled = false, borderRadius = 8 }: ButtonProps) => {
+export const Button = ({ title, onPress, variant = 'primary', disabled = false, borderRadius = 8, backgroundColor }: ButtonProps) => {
   const getButtonStyle = () => {
+    const baseStyle = backgroundColor ? { backgroundColor } : {};
     switch (variant) {
       case 'primary':
         return {
-          backgroundColor: buttonVariants.primary.backgroundColor,
+          ...baseStyle,
+          backgroundColor: backgroundColor || buttonVariants.primary.backgroundColor,
         };
       case 'secondary':
         return {
-          backgroundColor: buttonVariants.secondary.backgroundColor,
+          ...baseStyle,
+          backgroundColor: backgroundColor || buttonVariants.secondary.backgroundColor,
         };
       case 'outline':
         return {
@@ -27,7 +31,8 @@ export const Button = ({ title, onPress, variant = 'primary', disabled = false, 
         };
       default:
         return {
-          backgroundColor: buttonVariants.primary.backgroundColor,
+          ...baseStyle,
+          backgroundColor: backgroundColor || buttonVariants.primary.backgroundColor,
         };
     }
   };

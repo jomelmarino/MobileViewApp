@@ -5,6 +5,7 @@ module.exports = function (api) {
     presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
 
     plugins: [
+      ["module:react-native-dotenv"],
       'react-native-worklets/plugin',
       // react-native-reanimated plugin must be last
       'react-native-reanimated/plugin',

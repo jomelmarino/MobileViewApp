@@ -1,9 +1,10 @@
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../src/utils/supabase';
 
 interface HomeScreenProps {
   onNavigateToAnnouncements: () => void;
-  onNavigateToDetail: (type: 'announcement' | 'event', id: string) => void;
+  onNavigateToDetail: (type: 'announcement', id: string) => void;
 }
 
 export const HomeScreen = ({ onNavigateToAnnouncements, onNavigateToDetail }: HomeScreenProps) => {

@@ -17,14 +17,14 @@ export const AppNavigator = () => {
   // Redirect to login if not authenticated
 
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
-  const [detailType, setDetailType] = useState<'announcement' | 'event'>('announcement');
+  const [detailType, setDetailType] = useState<'announcement'>('announcement');
   const [detailId, setDetailId] = useState<string>('');
 
   const navigateTo = (screen: Screen) => {
     setCurrentScreen(screen);
   };
 
-  const navigateToDetail = (type: 'announcement' | 'event', id: string) => {
+  const navigateToDetail = (type: 'announcement', id: string) => {
     setDetailType(type);
     setDetailId(id);
     navigateTo('detail');
@@ -56,6 +56,7 @@ export const AppNavigator = () => {
         return (
           <DetailScreen
             type={detailType}
+            id={detailId}
             onBack={() => navigateTo('announcements')}
           />
         );
@@ -77,30 +78,30 @@ export const AppNavigator = () => {
     }
 
     return (
-      <View className="flex-row bg-blue-100 border-t border-blue-300">
+      <View className="flex-row bg-white shadow-lg rounded-t-3xl border-t border-gray-200 px-2 py-1">
         <TouchableOpacity
-          className={`flex-1 items-center justify-center py-4 ${currentScreen === 'home' ? 'bg-blue-300' : ''}`}
+          className={`flex-1 items-center justify-center py-3 rounded-2xl mx-1 ${currentScreen === 'home' ? 'bg-primary-30' : 'bg-transparent'}`}
           onPress={() => navigateTo('home')}
         >
-          <Text className={`font-bold text-base ${currentScreen === 'home' ? 'text-blue-500' : 'text-blue-500'}`}>
+          <Text className={`font-semibold text-sm ${currentScreen === 'home' ? 'text-white' : 'text-gray-600'}`}>
             Home
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className={`flex-1 items-center justify-center py-4 ${currentScreen === 'announcements' ? 'bg-blue-300' : ''}`}
+          className={`flex-1 items-center justify-center py-3 rounded-2xl mx-1 ${currentScreen === 'announcements' ? 'bg-primary-30' : 'bg-transparent'}`}
           onPress={() => navigateTo('announcements')}
         >
-          <Text className={`font-bold text-base ${currentScreen === 'announcements' ? 'text-blue-500' : 'text-blue-500'}`}>
+          <Text className={`font-semibold text-sm ${currentScreen === 'announcements' ? 'text-white' : 'text-gray-600'}`}>
             Announcements
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className={`flex-1 items-center justify-center py-4 ${currentScreen === 'profile' ? 'bg-blue-300' : ''}`}
+          className={`flex-1 items-center justify-center py-3 rounded-2xl mx-1 ${currentScreen === 'profile' ? 'bg-primary-30' : 'bg-transparent'}`}
           onPress={() => navigateTo('profile')}
         >
-          <Text className={`font-bold text-base ${currentScreen === 'profile' ? 'text-blue-500' : 'text-blue-500'}`}>
+          <Text className={`font-semibold text-sm ${currentScreen === 'profile' ? 'text-white' : 'text-gray-600'}`}>
             Profile
           </Text>
         </TouchableOpacity>

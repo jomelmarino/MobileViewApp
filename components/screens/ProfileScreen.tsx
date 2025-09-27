@@ -1,5 +1,8 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { useEffect, useState } from 'react';
 import { Button } from '../common/Button';
+import { getCurrentUser } from '../../src/utils/supabase';
+import type { User } from '@supabase/supabase-js';
 
 interface ProfileScreenProps {
   onLogout: () => void;
@@ -7,21 +10,19 @@ interface ProfileScreenProps {
 }
 
 export const ProfileScreen = ({ onLogout, onEditProfile }: ProfileScreenProps) => {
-  // TODO: Fetch user data from Supabase
-  // Example: const { data: user, error } = await supabase.auth.getUser();
-  // if (error) { console.error('Error fetching user:', error); }
-  // else { setUser(user); }
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // TODO: Replace mock data with Supabase data
-  // Use: const { data: { user }, error } = await supabase.auth.getUser();
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, []);
+
   const user = {
-    name: 'John Doe',
-    email: 'john.doe@company.com',
-    avatar: 'https://example.com/avatar.jpg',
-    department: 'Engineering',
-    position: 'Senior Developer',
-    joinDate: 'January 2022',
-    phone: '+1 (555) 123-4567',
+    name: currentUser?.user_metadata?.full_name || 'Loading...',
+    email: currentUser?.email || 'Loading...',
   };
 
   const menuItems = [
@@ -33,19 +34,20 @@ export const ProfileScreen = ({ onLogout, onEditProfile }: ProfileScreenProps) =
   ];
 
   return (
-    <View className="flex-1 bg-blue-50">
+    <View className="flex-1 bg-primary-10">
       {/* Header */}
-      <View className="bg-blue-500 pt-10 pb-8 px-6 rounded-bl-3xl rounded-br-3xl items-center">
+      <View className="bg-primary-30 pt-10 pb-8 px-6 rounded-bl-3xl rounded-br-3xl items-center relative">
+        <View className="absolute top-12 right-4 p-2">
+          <Button title="Log Out" onPress={onLogout} variant="secondary" />
+        </View>
+
         <View className="w-24 h-24 bg-white rounded-full items-center justify-center mb-6 border-4 border-white">
           <Text className="text-blue-500 text-3xl font-bold">
-            {user.name.charAt(0)}
+            {user.name.charAt(0).toUpperCase()}
           </Text>
         </View>
         <Text className="text-2xl font-bold text-white mb-2">
           {user.name}
-        </Text>
-        <Text className="text-base text-white opacity-80">
-          {user.position} • {user.department}
         </Text>
       </View>
 
@@ -58,41 +60,21 @@ export const ProfileScreen = ({ onLogout, onEditProfile }: ProfileScreenProps) =
 
           <View className="mb-6">
             <Text className="text-sm text-blue-600 mb-2">
+              Full Name
+            </Text>
+            <Text className="text-base text-gray-900">
+              {user.name}
+            </Text>
+          </View>
+
+          <View className="mb-6">
+            <Text className="text-sm text-blue-600 mb-2">
               Email
             </Text>
             <Text className="text-base text-gray-900">
               {user.email}
             </Text>
           </View>
-
-          <View className="mb-6">
-            <Text className="text-sm text-blue-600 mb-2">
-              Phone
-            </Text>
-            <Text className="text-base text-gray-900">
-              {user.phone}
-            </Text>
-          </View>
-
-          <View className="mb-6">
-            <Text className="text-sm text-blue-600 mb-2">
-              Department
-            </Text>
-            <Text className="text-base text-gray-900">
-              {user.department}
-            </Text>
-          </View>
-
-          <View className="mb-6">
-            <Text className="text-sm text-blue-600 mb-2">
-              Member Since
-            </Text>
-            <Text className="text-base text-gray-900">
-              {user.joinDate}
-            </Text>
-          </View>
-
-          <Button title="Edit Profile" onPress={onEditProfile} variant="outline" />
         </View>
 
         {/* Menu Items */}
@@ -116,9 +98,7 @@ export const ProfileScreen = ({ onLogout, onEditProfile }: ProfileScreenProps) =
         </View>
 
         {/* Logout Button */}
-        <View className="p-6">
-          <Button title="Log Out" onPress={onLogout} variant="secondary" />
-        </View>
+        
       </ScrollView>
     </View>
   );
