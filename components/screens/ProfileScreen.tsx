@@ -37,11 +37,12 @@ export const ProfileScreen = ({ onLogout, onEditProfile }: ProfileScreenProps) =
     <View className="flex-1 bg-primary-10">
       {/* Header */}
       <View className="bg-primary-30 pt-10 pb-8 px-6 rounded-bl-3xl rounded-br-3xl items-center relative">
+        {/* Logout Button */}
         <View className="absolute top-12 right-4 p-2">
           <Button title="Log Out" onPress={onLogout} variant="secondary" />
         </View>
 
-        <View className="w-24 h-24 bg-white rounded-full items-center justify-center mb-6 border-4 border-white">
+        <View className="w-24 h-24 bg-blue rounded-full items-center justify-center mb-6 border-4 border-white">
           <Text className="text-blue-500 text-3xl font-bold">
             {user.name.charAt(0).toUpperCase()}
           </Text>
@@ -97,7 +98,6 @@ export const ProfileScreen = ({ onLogout, onEditProfile }: ProfileScreenProps) =
           ))}
         </View>
 
-        {/* Logout Button */}
         
       </ScrollView>
     </View>

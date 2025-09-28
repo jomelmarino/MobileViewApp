@@ -32,32 +32,32 @@ export const getCurrentUser = async () => {
 };
 
 // Database helpers
-export const getAnnouncements = async () => {
-  const { data, error } = await supabase
-    .from('announcements')
+export const getAnnouncements = async (limit?: number) => {
+  let query = supabase
+    .from('posts')
     .select('*')
     .order('created_at', { ascending: false });
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
   return { data, error };
 };
 
-export const getEvents = async () => {
+export const getAnnouncementById = async (id: string) => {
   const { data, error } = await supabase
-    .from('events')
+    .from('posts')
     .select('*')
-    .order('date', { ascending: true });
+    .eq('id', id)
+    .single();
   return { data, error };
 };
 
 export const createAnnouncement = async (title: string, content: string, userId: string) => {
   const { data, error } = await supabase
-    .from('announcements')
+    .from('posts')
     .insert([{ title, content, user_id: userId }]);
-  return { data, error };
-};
-
-export const createEvent = async (title: string, description: string, date: string, userId: string) => {
-  const { data, error } = await supabase
-    .from('events')
-    .insert([{ title, description, date, user_id: userId }]);
   return { data, error };
 };

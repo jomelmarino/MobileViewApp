@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Button } from '../common/Button';
-import { supabase } from '../../src/utils/supabase';
+import { getAnnouncementById, supabase } from '../../src/utils/supabase';
 
 interface Item {
   id: string;
@@ -28,18 +28,14 @@ export const DetailScreen = ({ type, id, onBack }: DetailScreenProps) => {
 
   const getImageUrl = (imagePath: string) => {
     const { data } = supabase.storage
-      .from('announcements')
+      .from('posts')
       .getPublicUrl(imagePath);
     return data.publicUrl;
   };
 
   useEffect(() => {
     const fetchItem = async () => {
-      const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await getAnnouncementById(id);
 
       if (error) {
         console.error('Error fetching item:', error);
@@ -56,7 +52,7 @@ export const DetailScreen = ({ type, id, onBack }: DetailScreenProps) => {
     if (id) {
       fetchItem();
     }
-  }, [type, id]);
+  }, [id]);
 
   if (loading || !item) {
     return (
@@ -82,8 +78,8 @@ export const DetailScreen = ({ type, id, onBack }: DetailScreenProps) => {
         </View>
 
         {/* Category Badge */}
-        <View className="bg-white self-start px-6 py-2 rounded-full">
-          <Text className="text-blue-500 text-sm font-bold">
+        <View className="self-start px-6 py-2 rounded-full">
+          <Text className="text-white text-2xl font-bold">
             {item.category}
           </Text>
         </View>

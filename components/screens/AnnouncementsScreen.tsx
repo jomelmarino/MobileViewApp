@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../src/utils/supabase';
+import { getAnnouncements, supabase } from '../../src/utils/supabase';
 
 interface Announcement {
   id: string;
@@ -25,21 +25,18 @@ export const AnnouncementsScreen = ({ onNavigateToDetail, onBack }: Announcement
 
   const getImageUrl = (imagePath: string) => {
     const { data } = supabase.storage
-      .from('announcements')
+      .from('posts')
       .getPublicUrl(imagePath);
     return data.publicUrl;
   };
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
-      const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await getAnnouncements();
 
       if (error) {
         console.error('Error fetching announcements:', error);
-      } else {
+      } else if (data) {
         // Add image URLs
         const announcementsWithImages = data.map(announcement => ({
           ...announcement,

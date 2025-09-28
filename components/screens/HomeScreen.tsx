@@ -1,6 +1,6 @@
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../src/utils/supabase';
+import { getAnnouncements } from '../../src/utils/supabase';
 
 interface HomeScreenProps {
   onNavigateToAnnouncements: () => void;
@@ -9,30 +9,22 @@ interface HomeScreenProps {
 
 export const HomeScreen = ({ onNavigateToAnnouncements, onNavigateToDetail }: HomeScreenProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // TODO: Fetch announcements from Supabase
-  // Example: const { data: announcements, error } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(5);
-  // if (error) { console.error('Error fetching announcements:', error); }
-  // else { setAnnouncements(data); }
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const { data, error } = await getAnnouncements(5);
+      if (error) {
+        console.error('Error fetching announcements:', error);
+      } else {
+        setAnnouncements(data || []);
+      }
+      setLoading(false);
+    };
 
-  // TODO: Replace mock data with Supabase data
-  // Use: const { data: announcements, error } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(5);
-  const announcements = [
-    {
-      id: '1',
-      title: 'System Maintenance',
-      description: 'Scheduled maintenance will occur this weekend. Services may be temporarily unavailable.',
-      date: '2023-06-15',
-      image: 'image1.png',
-    },
-    {
-      id: '2',
-      title: 'New Features Available',
-      description: 'We\'ve added new features to improve your experience. Check them out in the settings.',
-      date: '2023-06-10',
-      image: 'favicon.png',
-    },
-  ];
+    fetchAnnouncements();
+  }, []);
 
 
   const AnnouncementCard = ({ announcement }: { announcement: typeof announcements[0] }) => (
